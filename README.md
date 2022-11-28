@@ -1,0 +1,1 @@
+# typescript-typed-errors
