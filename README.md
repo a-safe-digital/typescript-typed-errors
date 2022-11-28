@@ -111,6 +111,7 @@ You might be thinking that sometimes you dont want to handle the error directly 
 
 ## Utils
 Now that we know the core functionality of the library, we can go to the interesting part. We've made some utils so handling errors is easier while still being type safe.
+### Error propagation
 Let's say I just want to access the value of a result without caring about if its an error, but still do it on a safe manner, by passing the error up in case there is one and type it as my return type. We can do that using wrap and unwrap. 
 
 ```ts
@@ -178,7 +179,42 @@ if (isErr(user)) {
   console.log(user.value)
 }
 ```
-There is no limit as how many levels you want to use unwrap, as long as you properly wrap it, the top-most caller function will get correct typing for all the errors possible. Functions being unwrapped don't need to be async, only the function where you're unwrapping them needs to be async.
+There is no limit as to how many levels you can use unwrap, as long as you properly wrap the caller function, the top-most caller function will get correct typing for all the errors possible down the chain. Functions being unwrapped don't need to be async, only the function where you're unwrapping them needs to be async.
+
+### Promise.all equivalent
+We also have an utility function for whenever you need an equivalent for Promise.all but on a typed manner.
+```ts
+import { resultAll } from 'typescript-typed-errors'
+
+async function functionA (isErr: boolean) {
+  return isErr
+    ? Err({ code: 'FunctionA' })
+    : Ok(true)
+}
+async function functionB (isErr: boolean) {
+  return isErr
+    ? Err({ code: 'FunctionB' })
+    : Ok(1)
+}
+async function functionC (isErr: boolean) {
+  return isErr
+    ? Err({ code: 'FunctionC' })
+    : Ok('string')
+}
+
+const result = await resultAll([
+  functionA(false),
+  functionB(true),
+  functionC(false),
+] as const) // we can use as const if we want our result type to have correct typings depending on the index.
+
+if (isOk(result)) {
+  // result.value is now a tuple [boolean, number, string]
+} else {
+  // result.error.code is now an union type 'FunctionA' | 'FunctionB' | 'FunctionC'
+}
+```
+Since resultAll returns a Result itself, we can also use unwrap on it if we do need it, we just need to ensure to pass all the function we are using to wrap.
 
 ## FAQ
 ### I want to get stack traces
