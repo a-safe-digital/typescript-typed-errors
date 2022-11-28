@@ -195,5 +195,7 @@ For you to use result.isOk() we would need to instantiate a Result class wheneve
 
 # Similar libraries
 [fp-ts](https://github.com/gcanti/fp-ts) provides similar functionality, but the library is much bigger and is biased towards Functional Programming.
+
 [ts-results](https://github.com/vultix/ts-results) is a Typescript implementation of Rust's Result and Option interfaces. This library offers an overall more complete set of utilities than our library, but lacks proper error propagation.
+
 [oxide.ts](https://github.com/traverse1984/oxide.ts) another Typescript implementation of Rust's Result and Option interfaces, it also lacks error propagation.
