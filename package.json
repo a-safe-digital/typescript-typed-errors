@@ -26,9 +26,6 @@
     "build": "tsc --project tsconfig.lib.json",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose true --watch"
   },
-  "dependencies": {
-    "tslib": "^2.4.1"
-  },
   "devDependencies": {
     "@types/eslint": "^8.4.10",
     "@types/jest": "29.2.3",
