@@ -5,7 +5,7 @@ A dependency-less library aiming to provide a set of utilities to bring proper e
 It's inspired by Rust's Result, but we don't try to replicate every feature that Rust's Result offers, we instead use it as inspiration and bring functionality that is akin to the Typescript ecosystem.
 
 # Example usage
-### Core functionality
+## Core functionality
 Let's say we have this piece of code:
 ```ts
 import { userRepo } from './your-database' // some module in your codebase
@@ -109,7 +109,7 @@ We're using the interface `{ code: 'ErrorCode' }` to define our errors for demon
 
 You might be thinking that sometimes you dont want to handle the error directly but rather pass it up so the caller handle it. We've you covered, but that is not part of the core functionality, instead it is part of the utils and it can be imported separately.
 
-### Utils
+## Utils
 Now that we know the core functionality of the library, we can go to the interesting part. We've made some utils so handling errors is easier while still being type safe.
 Let's say I just want to access the value of a result without caring about if its an error, but still do it on a safe manner, by passing the error up in case there is one and type it as my return type. We can do that using wrap and unwrap. 
 
@@ -180,6 +180,7 @@ if (isErr(user)) {
 ```
 There is no limit as how many levels you want to use unwrap, as long as you properly wrap it, the top-most caller function will get correct typing for all the errors possible. Functions being unwrapped don't need to be async, only the function where you're unwrapping them needs to be async.
 
+## FAQ
 ### I want to get stack traces
 If you want to get stack traces, then you just need to instantiate a new Error and return it using Err:
 ```ts
@@ -189,7 +190,7 @@ function fallibleFunctionWithStackTrace () {
 ```
 You still get typings for the error. We don't recommend using this for control flow errors, and just use it whenever you really need a stack trace.
 
-# Why I need to import isOk and isErr to validate my result instead of just using result.isErr() and result.isOk()
+### Why I need to import isOk and isErr to validate my result instead of just using result.isErr() and result.isOk()
 For you to use result.isOk() we would need to instantiate a Result class whenever you returned a Result. Instead we just return a plain object that is identified as a result by using a symbol. This is a lot faster. Also, we use this library with some ES Modules, and [class instantiation is significantly slower on Node when using ESM compared to CJS](https://github.com/nodejs/node/issues/44186)
 
 # Similar libraries
