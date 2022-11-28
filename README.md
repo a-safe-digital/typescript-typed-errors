@@ -117,7 +117,7 @@ Let's say I just want to access the value of a result without caring about if it
 import { Result, Ok, Err, isOk, isErr, wrap, unwrap } from 'typescript-typed-errors'
 import { userRepo } from './your-database' // some function in your codebase
 
-async function createUser (email: string, password: string): Result<{ code: 'InvalidEmail' } | { code: 'PasswordTooWeak' }, User> {
+async function createUser (email: string, password: string): Result<{ code: 'InvalidEmail', email: string } | { code: 'PasswordTooWeak' }, User> {
   // ...
 }
 
@@ -148,7 +148,7 @@ We're not limited to wrapping only one unwrap operation per function, we can unw
 import { Result, Ok, Err, isOk, isErr, wrap, unwrap } from 'typescript-typed-errors'
 import { userRepo } from './your-database' // some function in your codebase
 
-async function createUser (email: string, password: string): Result<{ code: 'InvalidEmail' } | { code: 'PasswordTooWeak' }, User> {
+async function createUser (email: string, password: string): Result<{ code: 'InvalidEmail' | 'PasswordTooWeak' }, User> {
   // ...
 }
 
@@ -157,13 +157,14 @@ async function giveRole (userId: string, role: string): Result<{ code: 'RoleNotF
 }
 
 const createAdminUser = wrap<typeof createUser | typeof giveRole>()(
-  // for wrap to work correctly, we need to use an async function because we rely on .catch to pass the error up
   async (email: string, password: string) => {
     const user = unwrap(await createUser(email, password))
+
     if (user.id > 100) {
       // this is an stupid error, just for demonstration purposes
       return Err({ code: 'IdAbove100' })
     }
+
     unwrap(await giveRole(user.id, 'admin'))
     return Ok(user)
   },
@@ -171,13 +172,13 @@ const createAdminUser = wrap<typeof createUser | typeof giveRole>()(
 
 const user = createAdminUser('admin@company.com', '123123')
 if (isErr(user)) {
-  // user.error.code now is an union of: 'InvalidEmail' | 'PasswordTooWeak' | 'RoleNotFound' | 'RandomError' | 'IdAbove100'
+  // user.error.code now is an union of: 'InvalidEmail' | 'PasswordTooWeak' | 'RoleNotFound' | 'IdAbove100'
 } else {
   // now that we've verified user result is valid, we can access its value
   console.log(user.value)
 }
 ```
-There is no limit as how many levels you want to use unwrap, as long as you properly wrap it, the top-most caller function will get correct typing for all the errors possible.
+There is no limit as how many levels you want to use unwrap, as long as you properly wrap it, the top-most caller function will get correct typing for all the errors possible. Functions being unwrapped don't need to be async, only the function where you're unwrapping them needs to be async.
 
 ### I want to get stack traces
 If you want to get stack traces, then you just need to instantiate a new Error and return it using Err:
