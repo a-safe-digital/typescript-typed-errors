@@ -1,7 +1,7 @@
 {
   "name": "@fathom3-dev/typescript-typed-errors",
   "author": "Fathom3 Dev",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "type": "module",
   "keywords": [
@@ -17,8 +17,11 @@
     "type": "git",
     "url": "https://github.com/fathom3-dev/typescript-typed-errors.git"
   },
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "main": "./dist/src/index.js",
+  "typings": "./dist/src/index.d.ts",
   "engines": {
     "node": ">=16"
   },
