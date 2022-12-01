@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Result, Ok, Err, isErr, ErrResult } from './core.js'
+import { Result, Ok, Err, isErr, ErrResult, InferOkResult, InferErrResult } from './core.js'
 
 export type ResultPromise = Promise<Result<unknown, unknown>>
 export type ResultFn = (...args: any[]) => ResultPromise
-export type InferErrorResult <T extends ResultPromise> = Awaited<T> extends Result<infer L, unknown> ? L : never
-export type InferOkResult <T extends ResultPromise> = Awaited<T> extends Result<unknown, infer R> ? R : never
-export type InferErrorResultFn <T extends ResultFn> = InferErrorResult<ReturnType<T>>
-export type InferOkResultFn <T extends ResultFn> = InferOkResult<ReturnType<T>>
+
+export type InferPromisedErrResult <T extends ResultPromise> = InferErrResult<Awaited<T>>
+export type InferPromisedOkResult <T extends ResultPromise> = InferOkResult<Awaited<T>>
+
+export type InferErrorResultFn <T extends ResultFn> = InferPromisedErrResult<ReturnType<T>>
+export type InferPromisedOkResultFn <T extends ResultFn> = InferPromisedOkResult<ReturnType<T>>
 
 export function unwrap <L, R> (result: Result<L, R>): R {
   if (isErr(result)) {
@@ -31,8 +33,8 @@ export function wrap <Fn extends ResultFn, LL = InferErrorResultFn<Fn>> ()
         })
 }
 
-type MapResults <T extends readonly ResultPromise[]> = Result<InferErrorResult<T[number]>, {
-    [K in keyof T]: InferOkResult<T[K]>
+type MapResults <T extends readonly ResultPromise[]> = Result<InferPromisedErrResult<T[number]>, {
+    [K in keyof T]: InferPromisedOkResult<T[K]>
 }>
 
 export function resultAll <

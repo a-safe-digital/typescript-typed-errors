@@ -42,4 +42,28 @@ describe('core functionality', () => {
       expect(okResult.value).toStrictEqual(true)
     }
   })
+
+  it('can detect multiple erroneus values', () => {
+    function maybeError (err: number) {
+      if (err === 0) {
+        return Ok(true)
+      } else if (err === 1) {
+        return Err({ code: '1' as const })
+      } else if (err === 2) {
+        return Err({ code: '2' as const })
+      } else if (err === 3) {
+        return Err({ code: '3' as const })
+      } else {
+        return Ok('')
+      }
+    }
+    const errResult = maybeError(3)
+    expect(isErr(errResult)).toBe(true)
+    expect(isOk(errResult)).toBe(false)
+    if (isErr(errResult)) {
+      expect(errResult.error).toStrictEqual({ code: '3' })
+    } else {
+      console.log(errResult.value)
+    }
+  })
 })
