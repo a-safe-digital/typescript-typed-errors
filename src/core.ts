@@ -26,10 +26,16 @@ export function isErr <
 
 export function isErrCode <
   TErr extends ErrResult<IErr>,
+  R,
   TCode extends TErr['error']['code'],
   TErrNarrow extends ErrResult<IErr<TCode>>,
-> (result: TErr | TErrNarrow, code: [TCode, ...TCode[]]): result is TErrNarrow {
-  return code.includes(result.error.code as TCode)
+  TOk extends OkResult<R> = OkResult<R>,
+> (result: TOk | TErr | TErrNarrow, code: [TCode, ...TCode[]]): result is TErrNarrow {
+  if (isErr(result)) {
+    return code.includes(result.error.code as TCode)
+  } else {
+    return false
+  }
 }
 
 export function isOk <
