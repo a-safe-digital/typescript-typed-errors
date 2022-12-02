@@ -12,6 +12,7 @@
     "moduleResolution": "node16",
     "target": "es2020",
     "strict": true,
+    "strictNullChecks": true,
     "skipLibCheck": true
   },
   "exclude": ["node_modules", "tmp"]
