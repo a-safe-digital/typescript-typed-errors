@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { Result, Err, Ok, isErr, isOk } from '../src/core.js'
+import { Result, Err, Ok, isErr, isErrCode, isOk } from '../src/core.js'
 
 describe('core functionality', () => {
   it('can detect error', () => {
@@ -43,12 +43,18 @@ describe('core functionality', () => {
     }
   })
 
-  it('can detect multiple erroneus values', () => {
+  it.each([
+    [0, null, true],
+    [1, '1', null],
+    [2, '2', null],
+    [3, '3', null],
+    [4, null, ''],
+  ])('can detect multiple erroneus values %d', (i, err, val) => {
     function maybeError (err: number) {
       if (err === 0) {
         return Ok(true)
       } else if (err === 1) {
-        return Err({ code: '1' as const })
+        return Err({ code: '1' as const, ctx: '' })
       } else if (err === 2) {
         return Err({ code: '2' as const })
       } else if (err === 3) {
@@ -57,13 +63,42 @@ describe('core functionality', () => {
         return Ok('')
       }
     }
-    const errResult = maybeError(3)
-    expect(isErr(errResult)).toBe(true)
-    expect(isOk(errResult)).toBe(false)
+    const errResult = maybeError(i)
+    expect(isErr(errResult)).toBe(err !== null)
+    expect(isOk(errResult)).toBe(err === null)
+
     if (isErr(errResult)) {
-      expect(errResult.error).toStrictEqual({ code: '3' })
+      if (isErrCode(errResult, ['1', '2'])) {
+        expect(errResult.error.code === '1').toBe(err === '1')
+        expect(errResult.error.code === '2').toBe(err === '2')
+
+        // @ts-expect-error we shouldnt be able to use 3 as code, because we've narrowed it to 1 | 2
+        expect(errResult.error.code === '3').toBe(false)
+      } else {
+        expect(errResult.error.code === '3').toStrictEqual(true)
+
+        // @ts-expect-error this should fail, because we've narrowed other error to be 3 only
+        expect(errResult.error.code === '2').toStrictEqual(false)
+        // @ts-expect-error this should fail, because we've narrowed other error to be 3 only
+        expect(errResult.error.code === '1').toStrictEqual(false)
+      }
+
+      // @ts-expect-error this should fail, as 'a' is not an err code possibility
+      if (isErrCode(errResult, ['1', '2', 'a'])) {
+        //
+      }
+
+      // @ts-expect-error this should fail, as we dont accept empty arrays
+      if (isErrCode(errResult, [])) {
+        //
+      }
+
+      if (!isErrCode(errResult, ['1', '2', '3'])) {
+        // @ts-expect-error this should fail, as errResult should be never
+        console.log(errResult.error.code)
+      }
     } else {
-      console.log(errResult.value)
+      expect(errResult.value).toBe(val)
     }
   })
 })
