@@ -6,6 +6,7 @@ export type ErrResult <L extends IErr> = { error: L, [IsErrSymbol]: true }
 export type Result<L extends IErr = never, R = never> = ErrResult<L> | OkResult<R>
 export type InferErrResult <T extends Result<IErr, unknown>> = T extends ErrResult<infer L> ? L : never
 export type InferOkResult <T extends Result<IErr, unknown>> = T extends OkResult<infer R> ? R : never
+export type InferErrCode <T extends Result<IErr, unknown>> = InferErrResult<T>['code']
 
 export function Err <L extends IErr> (error: L): ErrResult<L> {
   return { error, [IsErrSymbol]: true }
@@ -31,7 +32,7 @@ export function isErrCode <
   TErrNarrow extends ErrResult<IErr<TCode>>,
   TOk extends OkResult<R> = OkResult<R>,
 > (result: TOk | TErr | TErrNarrow, code: [TCode, ...TCode[]]): result is TErrNarrow {
-  if (isErr(result)) {
+  if (result[IsErrSymbol]) {
     return code.includes(result.error.code as TCode)
   } else {
     return false
