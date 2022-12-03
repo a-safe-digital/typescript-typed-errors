@@ -10,7 +10,7 @@ async function maybeError (isErr: boolean) {
 
 async function resultRecord <T extends Record<string, string>> (isErr: boolean, value: T) {
   return isErr
-    ? Err({ code: 'RecordError' as const, value })
+    ? Err({ code: 'RecordError', value })
     : Ok(value)
 }
 
@@ -39,7 +39,7 @@ describe('extra functionality (only promises supported)', () => {
         const value1 = unwrap(await maybeError(false))
         expect(value1).toBe(true)
         if (value1 === true) {
-          return Err({ code: 'Error' as const })
+          return Err({ code: 'Error' })
         } else {
           return Ok(true)
         }
@@ -59,7 +59,7 @@ describe('extra functionality (only promises supported)', () => {
         const value1 = unwrap(await maybeError(false))
         expect(value1).toBe(true)
         if (value1 === false) {
-          return Err({ code: 'Error' as const })
+          return Err({ code: 'Error' })
         } else {
           return Ok(true)
         }
@@ -103,7 +103,7 @@ describe('extra functionality (only promises supported)', () => {
       expect(isErr(result)).toBe(true)
       expect(isOk(result)).toBe(false)
       if (isErr(result)) {
-        expect(result.error.code).toBe('RecordError')
+        expect(result.error.code === 'RecordError').toBe(true)
         expect(result.error.value).toStrictEqual({ c: 'c' })
       }
     })
