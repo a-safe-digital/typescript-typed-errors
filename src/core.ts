@@ -1,6 +1,6 @@
 export const IsErrSymbol = Symbol('IsErr')
 
-export type IErr <T = string> = { code: T }
+export type IErr <T extends string | number = string | number> = { code: T }
 export type OkResult <R> = { value: R, [IsErrSymbol]: false }
 export type ErrResult <L extends IErr> = { error: L, [IsErrSymbol]: true }
 export type Result<L extends IErr = never, R = never> = ErrResult<L> | OkResult<R>
@@ -8,7 +8,7 @@ export type InferErrResult <T extends Result<IErr, unknown>> = T extends ErrResu
 export type InferOkResult <T extends Result<IErr, unknown>> = T extends OkResult<infer R> ? R : never
 export type InferErrCode <T extends Result<IErr, unknown>> = InferErrResult<T>['code']
 
-export function Err <Code extends string, L extends IErr<Code>> (error: L): ErrResult<L> {
+export function Err <Code extends IErr['code'], L extends IErr<Code>> (error: L): ErrResult<L> {
   return { error, [IsErrSymbol]: true }
 }
 
