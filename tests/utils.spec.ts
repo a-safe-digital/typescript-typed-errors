@@ -29,10 +29,18 @@ async function resultRecord <T extends Record<string, string>> (isErr: boolean, 
 describe('extra functionality (only promises supported)', () => {
   describe('wrap/unwrap', () => {
     it('can wrap/unwrap errors', async () => {
-      const wrappedFunction = wrap<typeof maybeManyErrors>()(async () => {
+      const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError>()(async () => {
         const value1 = unwrap(await maybeManyErrors(0))
         expect(value1).toBe(true) // we have direct access to the valid value, because we unwrapped it.
         const value2 = unwrap(await maybeManyErrors(1))
+        const value3 = unwrap(await maybeError(true))
+        expect(value3).not.toBeDefined()
+        if (value1 === false) {
+          return Err({ code: 'value1===false' })
+        }
+        if (value2 === false) {
+          return Err({ code: 'value2===false' })
+        }
         expect(value2).not.toBeDefined() // this should never execute, because unwrap will stop execution because of the error
         return Ok(true)
       })

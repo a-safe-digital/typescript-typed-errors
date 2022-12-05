@@ -19,15 +19,20 @@ export function unwrap <R> (result: OkResult<R> | ErrResult<IErr>): R {
 }
 
 export function wrap <Fn extends ResultFn, LL extends IErr = InferErrorResultFn<Fn>> ()
-  : <A extends any[], L extends IErr = never, R = never> (
-    fn: (...args: A) => Promise<Result<L, R>>
+  : <
+  A extends unknown[],
+  TResult extends ResultPromise,
+  L extends InferPromisedErrResult<TResult>,
+  R extends InferPromisedOkResult<TResult>
+  > (
+    fn: (...args: A) => TResult
   ) => (...args: A) => Promise<Result<LL | L, R>> {
   return (fn) =>
     (...args) =>
       fn(...args)
         .catch((err) => {
           if (isErr(err)) {
-            return err as ErrResult<LL>
+            return err
           }
           throw err
         })
