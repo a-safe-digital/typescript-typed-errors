@@ -1,11 +1,23 @@
 import { describe, it, test, expect } from '@jest/globals'
-import { Err, Ok, isErr, isOk } from '../src/core.js'
+import { Err, Ok, isErr, isErrCode, isOk } from '../src/core.js'
 import { wrap, unwrap, resultAll } from '../src/utils.js'
 
 async function maybeError (isErr: boolean) {
   return isErr
     ? Err({ code: 'MaybeError' as const })
     : Ok(true)
+}
+
+async function maybeManyErrors (err: number) {
+  if (err === 0) {
+    return Ok(true)
+  } else if (err === 1) {
+    return Err({ code: '1' })
+  } else if (err === 2) {
+    return Err({ code: '2' })
+  } else {
+    return Err({ code: '>=3' })
+  }
 }
 
 async function resultRecord <T extends Record<string, string>> (isErr: boolean, value: T) {
@@ -17,10 +29,10 @@ async function resultRecord <T extends Record<string, string>> (isErr: boolean, 
 describe('extra functionality (only promises supported)', () => {
   describe('wrap/unwrap', () => {
     it('can wrap/unwrap errors', async () => {
-      const wrappedFunction = wrap<typeof maybeError>()(async () => {
-        const value1 = unwrap(await maybeError(false))
+      const wrappedFunction = wrap<typeof maybeManyErrors>()(async () => {
+        const value1 = unwrap(await maybeManyErrors(0))
         expect(value1).toBe(true) // we have direct access to the valid value, because we unwrapped it.
-        const value2 = unwrap(await maybeError(true))
+        const value2 = unwrap(await maybeManyErrors(1))
         expect(value2).not.toBeDefined() // this should never execute, because unwrap will stop execution because of the error
         return Ok(true)
       })
@@ -29,8 +41,8 @@ describe('extra functionality (only promises supported)', () => {
       expect(isErr(value)).toBe(true)
       expect(isOk(value)).toBe(false)
 
-      if (isErr(value)) {
-        expect(value.error).toStrictEqual({ code: 'MaybeError' })
+      if (isErrCode(value, ['1'])) {
+        expect(value.error).toStrictEqual({ code: '1' })
       }
     })
 

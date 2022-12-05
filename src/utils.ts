@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Result, Ok, Err, IErr, isErr, ErrResult, InferOkResult, InferErrResult } from './core.js'
+import { Result, Ok, Err, IErr, isErr, ErrResult, OkResult, InferOkResult, InferErrResult } from './core.js'
 
 export type ResultPromise = Promise<Result<IErr, unknown>>
 export type ResultFn = (...args: any[]) => ResultPromise
@@ -10,7 +10,7 @@ export type InferPromisedOkResult <T extends ResultPromise> = InferOkResult<Awai
 export type InferErrorResultFn <T extends ResultFn> = InferPromisedErrResult<ReturnType<T>>
 export type InferPromisedOkResultFn <T extends ResultFn> = InferPromisedOkResult<ReturnType<T>>
 
-export function unwrap <L extends IErr, R> (result: Result<L, R>): R {
+export function unwrap <R> (result: OkResult<R> | ErrResult<IErr>): R {
   if (isErr(result)) {
     throw result
   }
