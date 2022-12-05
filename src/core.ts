@@ -8,6 +8,13 @@ export type InferErrResult <T extends Result<IErr, unknown>> = T extends ErrResu
 export type InferOkResult <T extends Result<IErr, unknown>> = T extends OkResult<infer R> ? R : never
 export type InferErrCode <T extends Result<IErr, unknown>> = InferErrResult<T>['code']
 export type HandledErrorCodes <T extends Result<IErr, unknown>> = [InferErrCode<T>, ...InferErrCode<T>[]]
+export type ResultPromise = Promise<Result<IErr, unknown>>
+export type ResultAsyncFn = (...args: any[]) => ResultPromise
+export type ResultFn = (...args: any[]) => Result<IErr, unknown>
+export type InferPromisedErrResult <T extends ResultPromise> = InferErrResult<Awaited<T>>
+export type InferPromisedOkResult <T extends ResultPromise> = InferOkResult<Awaited<T>>
+export type InferErrorResultAsyncFn <T extends ResultAsyncFn> = InferPromisedErrResult<ReturnType<T>>
+export type InferOkResultAsyncFn <T extends ResultAsyncFn> = InferPromisedOkResult<ReturnType<T>>
 
 export function Err <Code extends IErr['code'], L extends IErr<Code>> (error: L): ErrResult<L> {
   return { error, [IsErrSymbol]: true }
