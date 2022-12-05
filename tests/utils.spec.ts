@@ -29,10 +29,10 @@ async function resultRecord <T extends Record<string, string>> (isErr: boolean, 
 describe('extra functionality (only promises supported)', () => {
   describe('wrap/unwrap', () => {
     it('can wrap/unwrap errors', async () => {
-      const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError>()(async () => {
-        const value1 = unwrap(await maybeManyErrors(0))
-        expect(value1).toBe(true) // we have direct access to the valid value, because we unwrapped it.
-        const value2 = unwrap(await maybeManyErrors(1))
+      const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError>()(async (n: number) => {
+        const value1 = unwrap(await maybeManyErrors(n))
+        expect(value1).toBe(n === 0) // we have direct access to the valid value, because we unwrapped it.
+        const value2 = unwrap(await maybeManyErrors(n + 1))
         const value3 = unwrap(await maybeError(true))
         expect(value3).not.toBeDefined()
         if (value1 === false) {
@@ -45,7 +45,7 @@ describe('extra functionality (only promises supported)', () => {
         return Ok(true)
       })
 
-      const value = await wrappedFunction()
+      const value = await wrappedFunction(0)
       expect(isErr(value)).toBe(true)
       expect(isOk(value)).toBe(false)
 

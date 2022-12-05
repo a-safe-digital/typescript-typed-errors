@@ -7,6 +7,7 @@ export type Result<L extends IErr = never, R = never> = ErrResult<L> | OkResult<
 export type InferErrResult <T extends Result<IErr, unknown>> = T extends ErrResult<infer L> ? L : never
 export type InferOkResult <T extends Result<IErr, unknown>> = T extends OkResult<infer R> ? R : never
 export type InferErrCode <T extends Result<IErr, unknown>> = InferErrResult<T>['code']
+export type HandledErrorCodes <T extends Result<IErr, unknown>> = [InferErrCode<T>, ...InferErrCode<T>[]]
 
 export function Err <Code extends IErr['code'], L extends IErr<Code>> (error: L): ErrResult<L> {
   return { error, [IsErrSymbol]: true }
