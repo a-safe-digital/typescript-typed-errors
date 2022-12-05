@@ -18,10 +18,8 @@ export function Ok <R> (value: R): OkResult<R> {
 
 export function isErr <
   L extends IErr,
-  R,
-  TOk extends OkResult<R> = OkResult<R>,
   TErr extends ErrResult<L> = ErrResult<L>
-> (result: TOk | TErr): result is TErr {
+> (result: OkResult<unknown> | TErr): result is TErr {
   return result[IsErrSymbol]
 }
 
@@ -38,10 +36,8 @@ export function isErrCode <
 }
 
 export function isOk <
-  L extends IErr,
   R,
   TOk extends OkResult<R> = OkResult<R>,
-  TErr extends ErrResult<L> = ErrResult<L>
-> (result: TOk | TErr): result is TOk {
+> (result: ErrResult<IErr> | TOk): result is TOk {
   return !result[IsErrSymbol]
 }
