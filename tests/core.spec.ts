@@ -54,51 +54,76 @@ describe('core functionality', () => {
       if (err === 0) {
         return Ok(true)
       } else if (err === 1) {
-        return Err({ code: '1' as const, ctx: '' })
+        return Err({ code: '1' })
       } else if (err === 2) {
-        return Err({ code: '2' as const })
+        return Err({ code: '2' })
       } else if (err === 3) {
-        return Err({ code: '3' as const })
+        return Err({ code: '3', ctx: true })
       } else {
         return Ok('')
       }
     }
-    const errResult = maybeError(i)
-    expect(isErr(errResult)).toBe(err !== null)
-    expect(isOk(errResult)).toBe(err === null)
+    const result = maybeError(i)
+    expect(isErr(result)).toBe(err !== null)
+    expect(isOk(result)).toBe(err === null)
 
-    if (isErr(errResult)) {
-      if (isErrCode(errResult, ['1', '2'])) {
-        expect(errResult.error.code === '1').toBe(err === '1')
-        expect(errResult.error.code === '2').toBe(err === '2')
+    if (isErr(result)) {
+      if (isErrCode(result, ['1', '2'])) {
+        expect(result.error.code === '1').toBe(err === '1')
+        expect(result.error.code === '2').toBe(err === '2')
 
         // @ts-expect-error we shouldnt be able to use 3 as code, because we've narrowed it to 1 | 2
-        expect(errResult.error.code === '3').toBe(false)
+        expect(result.error.code === '3').toBe(false)
       } else {
-        expect(errResult.error.code === '3').toStrictEqual(true)
+        expect(result.error.code === '3').toBe(true)
+        expect(result.error.ctx).toBe(true)
 
         // @ts-expect-error this should fail, because we've narrowed other error to be 3 only
-        expect(errResult.error.code === '2').toStrictEqual(false)
+        expect(result.error.code === '2').toBe(false)
         // @ts-expect-error this should fail, because we've narrowed other error to be 3 only
-        expect(errResult.error.code === '1').toStrictEqual(false)
+        expect(result.error.code === '1').toBe(false)
       }
 
       // @ts-expect-error this should fail, as 'a' is not an err code possibility
-      if (isErrCode(errResult, ['1', '2', 'a'])) {
+      if (isErrCode(result, ['1', '2', 'a'])) {
         //
       }
 
       // @ts-expect-error this should fail, as we dont accept empty arrays
-      if (isErrCode(errResult, [])) {
+      if (isErrCode(result, [])) {
         //
       }
 
-      if (!isErrCode(errResult, ['1', '2', '3'])) {
-        // @ts-expect-error this should fail, as errResult should be never
-        console.log(errResult.error.code)
+      if (!isErrCode(result, ['1', '2', '3'])) {
+        // @ts-expect-error this should fail, as result should be never
+        console.log(result.error.code)
       }
     } else {
-      expect(errResult.value).toBe(val)
+      expect(result.value).toBe(val)
+    }
+
+    if (isErrCode(result, ['1', '2', '3'])) {
+      expect(result.error.code).toBe(err)
+    } else {
+      expect(result.value).toBe(val)
+    }
+
+    function handleOnlyOneError () {
+      const result = maybeError(2)
+      if (isErrCode(result, ['1'])) {
+        return Ok(1)
+      } else {
+        return result
+      }
+    }
+
+    const result2 = handleOnlyOneError()
+    if (isErrCode(result2, ['2', '3'])) {
+      //
+    }
+    // @ts-expect-error 1 is not a possible err code since we handled it
+    if (isErrCode(result2, ['1', '2'])) {
+      //
     }
   })
 })
