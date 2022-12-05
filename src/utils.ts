@@ -1,14 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Result, Ok, Err, IErr, isErr, ErrResult, OkResult, InferOkResult, InferErrResult } from './core.js'
-
-export type ResultPromise = Promise<Result<IErr, unknown>>
-export type ResultFn = (...args: any[]) => ResultPromise
-
-export type InferPromisedErrResult <T extends ResultPromise> = InferErrResult<Awaited<T>>
-export type InferPromisedOkResult <T extends ResultPromise> = InferOkResult<Awaited<T>>
-
-export type InferErrorResultFn <T extends ResultFn> = InferPromisedErrResult<ReturnType<T>>
-export type InferPromisedOkResultFn <T extends ResultFn> = InferPromisedOkResult<ReturnType<T>>
+import {
+  Result,
+  Ok,
+  Err,
+  IErr,
+  isErr,
+  ErrResult,
+  OkResult,
+  ResultPromise,
+  ResultAsyncFn,
+  InferErrorResultAsyncFn,
+  InferPromisedErrResult,
+  InferPromisedOkResult,
+} from './core.js'
 
 export function unwrap <R> (result: OkResult<R> | ErrResult<IErr>): R {
   if (isErr(result)) {
@@ -18,7 +21,7 @@ export function unwrap <R> (result: OkResult<R> | ErrResult<IErr>): R {
   return ret
 }
 
-export function wrap <Fn extends ResultFn, LL extends IErr = InferErrorResultFn<Fn>> ()
+export function wrap <Fn extends ResultAsyncFn, LL extends IErr = InferErrorResultAsyncFn<Fn>> ()
   : <
   A extends unknown[],
   TResult extends ResultPromise,
