@@ -13,6 +13,7 @@ module.exports = {
   rules: {
     'consistent-return': 'error',
     'typescript-typed-errors/consistent-result-return': 'error',
+    'typescript-typed-errors/consistent-unwrap': 'error',
     'comma-dangle': ['error', 'always-multiline'],
     'operator-linebreak': ['error', 'before'],
     // no-undef already handled by the ts compiler
