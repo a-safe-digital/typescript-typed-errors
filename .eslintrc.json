@@ -1,12 +1,16 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": ["tsconfig.lib.json", "tsconfig.spec.json"]
+  },
+  "plugins": ["@typescript-eslint", "typescript-typed-errors"],
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "standard"
   ],
   "rules": {
+    "consistent-return": "error",
     "comma-dangle": ["error", "always-multiline"],
     "operator-linebreak": ["error", "before"],
     // no-undef already handled by the ts compiler
@@ -19,7 +23,8 @@
     "no-dupe-class-members": "off",
     "@typescript-eslint/no-redeclare": "error",
     "@typescript-eslint/no-dupe-class-members": "error",
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "typescript-typed-errors/consistent-result-return": "error"
   },
   "overrides": [
     {
