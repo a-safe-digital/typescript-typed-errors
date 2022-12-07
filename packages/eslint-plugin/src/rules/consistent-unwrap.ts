@@ -100,7 +100,15 @@ export default createRule({
       if (!fn.async) return
 
       if (!typeParameters || typeParameters.params.length !== 1) {
-        context.report({ messageId: 'missingTypeParamInWrap', node: callee })
+        context.report({
+          messageId: 'missingTypeParamInWrap',
+          node: callee,
+          fix: (fixer) => {
+            return !typeParameters
+              ? fixer.insertTextAfter(callee, '<unknown>') // next iteration will fill it properly
+              : fixer.replaceText(typeParameters, '<unknown>')
+          },
+        })
         return
       }
 
@@ -119,13 +127,16 @@ export default createRule({
           context.report({
             node: tnode,
             messageId: 'badWrapTypeArg',
+            fix: (fixer) => {
+              return fixer.replaceText(param, 'unknown')
+            },
           })
         } else if (wrappedFns.has(tnode.exprName.name)) {
           context.report({
             node: tnode,
             messageId: 'duplicatedWrapArg',
             fix: (fixer) => {
-              return fixer.remove(tnode)
+              return fixer.replaceText(param, 'unknown')
             },
           })
         } else {
