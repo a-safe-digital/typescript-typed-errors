@@ -48,11 +48,9 @@ export default createRule({
 
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node)
       const nodeType = checker.getTypeAtLocation(tsNode)
-      const props = nodeType.getApparentProperties()
 
-      return props.some((symb) => {
-        return /__@IsErrSymbol@/g.test(symb.escapedName.toString())
-      })
+      return nodeType.aliasSymbol?.name === 'OkResult'
+        || nodeType.aliasSymbol?.name === 'ErrResult'
     }
 
     function exitFunction (): void {
