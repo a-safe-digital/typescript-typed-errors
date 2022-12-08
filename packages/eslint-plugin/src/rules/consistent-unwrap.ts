@@ -9,7 +9,7 @@ type WrapScope = {
   upper: WrapScope | null
   fn: FunctionNode
   callee: TSESTree.Identifier
-  param: TSESTree.TypeNode // maybe we dont need this
+  typeParameters: TSESTree.TSTypeParameterInstantiation | undefined
   inFn: boolean
   unwrappedFns: Map<string, TSESTree.CallExpression>
   wrappedFns: Map<string, TSESTree.TSTypeQuery>
@@ -79,59 +79,14 @@ export default createRule({
       )) return
       if (!fn.async) return
 
-      if (!typeParameters || typeParameters.params.length !== 1) {
-        context.report({
-          messageId: 'missingTypeParamInWrap',
-          node: callee,
-          fix: (fixer) => {
-            return !typeParameters
-              ? fixer.insertTextAfter(callee, '<unknown>') // next iteration will fill it properly
-              : fixer.replaceText(typeParameters, '<unknown>')
-          },
-        })
-        return
-      }
-
-      const param = typeParameters.params[0]
-      const types = param.type === ANT.TSUnionType
-        ? param.types
-        : [param]
-
-      const wrappedFns: Map<string, TSESTree.TSTypeQuery> = new Map()
-
-      types.forEach((tnode) => {
-        if (
-          tnode.type !== ANT.TSTypeQuery
-          || tnode.exprName.type !== ANT.Identifier
-        ) {
-          context.report({
-            node: tnode,
-            messageId: 'badWrapTypeArg',
-            fix: (fixer) => {
-              return fixer.replaceText(param, 'unknown')
-            },
-          })
-        } else if (wrappedFns.has(tnode.exprName.name)) {
-          context.report({
-            node: tnode,
-            messageId: 'duplicatedWrapArg',
-            fix: (fixer) => {
-              return fixer.replaceText(param, 'unknown')
-            },
-          })
-        } else {
-          wrappedFns.set(tnode.exprName.name, tnode)
-        }
-      })
-
       wrappedScope = {
         upper: wrappedScope,
         fn,
-        callee,
         inFn: false,
-        param,
+        callee,
+        typeParameters,
         unwrappedFns: new Map(),
-        wrappedFns,
+        wrappedFns: new Map(),
       }
     }
 
@@ -166,34 +121,71 @@ export default createRule({
 
     function exitFunction (fn: FunctionNode) {
       if (!wrappedScope || wrappedScope.fn !== fn) return
-      const { param, callee, unwrappedFns, wrappedFns } = wrappedScope
 
-      const missingWraps: string[] = []
+      const { typeParameters, callee, unwrappedFns, wrappedFns } = wrappedScope
+
+      const fixStrategy = !typeParameters
+        ? ['after', callee] as const
+        : ['replace', typeParameters] as const
+      let needFix = false
+
+      if (!typeParameters || typeParameters.params.length !== 1) {
+        context.report({
+          messageId: 'missingTypeParamInWrap',
+          node: callee,
+        })
+        needFix = true
+      } else {
+        const param = typeParameters.params[0]
+        const types = param.type === ANT.TSUnionType
+          ? param.types
+          : [param]
+
+        types.forEach((tnode) => {
+          if (
+            tnode.type !== ANT.TSTypeQuery
+            || tnode.exprName.type !== ANT.Identifier
+          ) {
+            context.report({
+              node: tnode,
+              messageId: 'badWrapTypeArg',
+            })
+            needFix = true
+          } else if (wrappedFns.has(tnode.exprName.name)) {
+            context.report({
+              node: tnode,
+              messageId: 'duplicatedWrapArg',
+            })
+            needFix = true
+          } else {
+            wrappedFns.set(tnode.exprName.name, tnode)
+          }
+        })
+      }
+
       unwrappedFns.forEach((node, fnName) => {
         if (!wrappedFns.has(fnName)) {
-          missingWraps.push(fnName)
           context.report({ messageId: 'unwrapNotInWrap', node })
+          needFix = true
         }
       })
 
-      const excedingWraps: string[] = []
       wrappedFns.forEach((node, fnName) => {
         if (!unwrappedFns.has(fnName)) {
-          excedingWraps.push(fnName)
           context.report({ messageId: 'wrappedFnNotUnwrapped', node })
+          needFix = true
         }
       })
 
-      if (
-        excedingWraps.length !== 0
-        || missingWraps.length !== 0
-      ) {
+      if (needFix) {
         context.report({
           messageId: 'badWrap',
           node: callee,
           fix: (fixer) => {
             const fixed = [...unwrappedFns.keys()].map((fn) => `typeof ${fn}`).join(' | ')
-            return fixer.replaceTextRange(param.range, fixed)
+            return fixStrategy[0] === 'after'
+              ? fixer.insertTextAfter(fixStrategy[1], `<${fixed}>`)
+              : fixer.replaceText(fixStrategy[1], `<${fixed}>`)
           },
         })
       }
