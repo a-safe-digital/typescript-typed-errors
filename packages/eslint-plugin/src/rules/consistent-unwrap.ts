@@ -24,7 +24,7 @@ export default createRule({
       description:
         'wrapped functions must specify the types of functions being unwrapped',
       recommended: 'error',
-      requiresTypeChecking: false,
+      requiresTypeChecking: true,
     },
     messages: {
       badWrap: 'specify all the types of functions being unwrapped',
@@ -36,56 +36,36 @@ export default createRule({
       unwrapNotInWrap: 'You must add this function type to wrap type parameter',
       wrappedFnNotUnwrapped: 'You are not unwrapping this function',
     },
-    schema: [],
-  },
-  defaultOptions: [],
-  create (context) {
-    let wrappedScope: WrapScope | null = null
-
-    function enterFunction (fn: FunctionNode) {
-      if (!wrappedScope || wrappedScope.fn !== fn) return
-      wrappedScope.inFn = true
-    }
-    function exitFunction (fn: FunctionNode) {
-      if (!wrappedScope || wrappedScope.fn !== fn) return
-      const { param, callee, unwrappedFns, wrappedFns } = wrappedScope
-
-      const missingWraps: string[] = []
-      unwrappedFns.forEach((node, fnName) => {
-        if (!wrappedFns.has(fnName)) {
-          missingWraps.push(fnName)
-          context.report({ messageId: 'unwrapNotInWrap', node })
-        }
-      })
-
-      const excedingWraps: string[] = []
-      wrappedFns.forEach((node, fnName) => {
-        if (!unwrappedFns.has(fnName)) {
-          excedingWraps.push(fnName)
-          context.report({ messageId: 'wrappedFnNotUnwrapped', node })
-        }
-      })
-
-      if (
-        excedingWraps.length !== 0
-        || missingWraps.length !== 0
-      ) {
-        context.report({
-          messageId: 'badWrap',
-          node: callee,
-          fix: (fixer) => {
-            const fixed = [...unwrappedFns.keys()].map((fn) => `typeof ${fn}`).join(' | ')
-            return fixer.replaceTextRange(param.range, fixed)
+    schema: [
+      {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          wrapName: {
+            type: 'string',
+            description: 'The name you are using to import wrap. (wrap by default)',
+            default: 'wrap',
           },
-        })
-      }
-
-      wrappedScope = wrappedScope?.upper || null
-    }
+          unwrapName: {
+            type: 'string',
+            description: 'The name you are using to import unwrap. (unwrap by default)',
+            default: 'unwrap',
+          },
+        },
+      },
+    ],
+  },
+  defaultOptions: [{
+    wrapName: 'wrap',
+    unwrapName: 'unwrap',
+  }],
+  create (context, [{ wrapName, unwrapName }]) {
+    let wrappedScope: WrapScope | null = null
 
     function onWrapCall (node: TSESTree.CallExpression) {
       const { callee, typeParameters } = node
-      if (!(callee.type === ANT.Identifier && callee.name === 'wrap')) {
+
+      if (!(callee.type === ANT.Identifier && callee.name === wrapName)) {
         return
       }
       if (!node.parent) return
@@ -155,11 +135,15 @@ export default createRule({
       }
     }
 
+    function enterFunction (fn: FunctionNode) {
+      if (!wrappedScope || wrappedScope.fn !== fn) return
+      wrappedScope.inFn = true
+    }
     function onUnwrapCall (node: TSESTree.CallExpression) {
       if (!wrappedScope || !wrappedScope.inFn) return
 
       const { callee } = node
-      if (!(callee.type === ANT.Identifier && callee.name === 'unwrap')) {
+      if (!(callee.type === ANT.Identifier && callee.name === unwrapName)) {
         return
       }
       if (node.arguments.length !== 1) return
@@ -178,6 +162,43 @@ export default createRule({
       }
 
       wrappedScope.unwrappedFns.set(callExpr.callee.name, callExpr)
+    }
+
+    function exitFunction (fn: FunctionNode) {
+      if (!wrappedScope || wrappedScope.fn !== fn) return
+      const { param, callee, unwrappedFns, wrappedFns } = wrappedScope
+
+      const missingWraps: string[] = []
+      unwrappedFns.forEach((node, fnName) => {
+        if (!wrappedFns.has(fnName)) {
+          missingWraps.push(fnName)
+          context.report({ messageId: 'unwrapNotInWrap', node })
+        }
+      })
+
+      const excedingWraps: string[] = []
+      wrappedFns.forEach((node, fnName) => {
+        if (!unwrappedFns.has(fnName)) {
+          excedingWraps.push(fnName)
+          context.report({ messageId: 'wrappedFnNotUnwrapped', node })
+        }
+      })
+
+      if (
+        excedingWraps.length !== 0
+        || missingWraps.length !== 0
+      ) {
+        context.report({
+          messageId: 'badWrap',
+          node: callee,
+          fix: (fixer) => {
+            const fixed = [...unwrappedFns.keys()].map((fn) => `typeof ${fn}`).join(' | ')
+            return fixer.replaceTextRange(param.range, fixed)
+          },
+        })
+      }
+
+      wrappedScope = wrappedScope?.upper || null
     }
 
     return {
