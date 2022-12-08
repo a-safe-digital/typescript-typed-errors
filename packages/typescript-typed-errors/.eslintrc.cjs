@@ -11,7 +11,6 @@ module.exports = {
     'standard',
   ],
   rules: {
-    'consistent-return': 'error',
     'typescript-typed-errors/consistent-result-return': 'error',
     'typescript-typed-errors/consistent-unwrap': 'error',
     'comma-dangle': ['error', 'always-multiline'],
