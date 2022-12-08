@@ -1,0 +1,19 @@
+{
+  "compileOnSave": false,
+  "ts-node": {
+    "esm": true,
+    "files": true
+  },
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2020",
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "tmp"]
+}

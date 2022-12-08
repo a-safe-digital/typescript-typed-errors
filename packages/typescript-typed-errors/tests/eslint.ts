@@ -26,8 +26,9 @@ export async function probandoEslint (n: number) {
       return Ok(false)
     case 3:
       return Ok(null)
+    default:
+      return Ok(undefined)
   }
-  return Ok(undefined)
 }
 
 export const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError | typeof probandoEslint>()(
