@@ -25,6 +25,7 @@ module.exports = {
     '@typescript-eslint/no-redeclare': 'error',
     '@typescript-eslint/no-dupe-class-members': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
   },
   overrides: [
     {
@@ -35,9 +36,6 @@ module.exports = {
       files: ['*.spec.ts', '*.test.ts', 'tests/*'],
       env: {
         jest: true,
-      },
-      rules: {
-        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
   ],
