@@ -30,18 +30,20 @@ export async function probandoEslint (n: number) {
   return Ok(undefined)
 }
 
-export const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError | typeof probandoEslint>()(async (n: number) => {
-  const value1 = unwrap(await maybeManyErrors(n))
-  const value2 = unwrap(await maybeError(true))
-  const value3 = unwrap(await probandoEslint(n))
-  if (value1 === false) {
-    return Err({ code: 'value1===false' })
-  }
-  if (value2 === false) {
-    return Err({ code: 'value2===false' })
-  }
-  if (value3 === false) {
-    return Err({ code: 'value3===false' })
-  }
-  return Ok(true)
-})
+export const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError | typeof probandoEslint>()(
+  async (n: number) => {
+    const value1 = unwrap(await maybeManyErrors(n))
+    const value2 = unwrap(await maybeError(true))
+    const value3 = unwrap(await probandoEslint(n))
+    if (value1 === false) {
+      return Err({ code: 'value1===false' })
+    }
+    if (value2 === false) {
+      return Err({ code: 'value2===false' })
+    }
+    if (value3 === false) {
+      return Err({ code: 'value3===false' })
+    }
+    return Ok(true)
+  },
+)
