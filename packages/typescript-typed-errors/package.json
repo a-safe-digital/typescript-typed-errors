@@ -44,7 +44,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.5.1",
     "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-typescript-typed-errors": "workspace:*",
+    "@fathom3-dev/eslint-plugin-typescript-typed-errors": "workspace:*",
     "jest": "29.3.1",
     "ts-jest": "29.0.3",
     "ts-node": "^10.9.1",

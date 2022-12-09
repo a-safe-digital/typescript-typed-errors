@@ -5,14 +5,13 @@ module.exports = {
     project: ['tsconfig.lib.json', 'tsconfig.spec.json', 'tsconfig.eslint.json'],
     tsconfigRootDir: __dirname,
   },
-  plugins: ['@typescript-eslint', 'typescript-typed-errors'],
+  plugins: ['@typescript-eslint', '@fathom3-dev/typescript-typed-errors'],
   extends: [
     'plugin:@typescript-eslint/recommended',
+    'plugin:@fathom3-dev/typescript-typed-errors/recommended',
     'standard',
   ],
   rules: {
-    'typescript-typed-errors/consistent-result-return': 'error',
-    'typescript-typed-errors/consistent-unwrap': 'error',
     'comma-dangle': ['error', 'always-multiline'],
     'operator-linebreak': ['error', 'before'],
     // no-undef already handled by the ts compiler
