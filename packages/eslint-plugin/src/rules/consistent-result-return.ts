@@ -58,8 +58,13 @@ export default createRule({
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node)
       const nodeType = checker.getTypeAtLocation(tsNode)
 
-      return nodeType.aliasSymbol?.name === 'OkResult'
-        || nodeType.aliasSymbol?.name === 'ErrResult'
+      if (nodeType.aliasSymbol) {
+        return nodeType.aliasSymbol.name === 'OkResult'
+          || nodeType.aliasSymbol.name === 'ErrResult'
+      }
+
+      const props = nodeType.getApparentProperties()
+      return props.some((p) => p.name.indexOf('__@IsErrSymbol@') === 0)
     }
 
     function exitFunction (): void {
@@ -74,6 +79,7 @@ export default createRule({
 
       scopeInfo.returns.forEach((node) => {
         if (!isResultExpression(node)) {
+          console.log('NONRESULTRETURN')
           context.report({
             node,
             messageId: 'nonResultReturn',

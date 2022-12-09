@@ -1,4 +1,4 @@
-import { wrap, unwrap, Ok, Err } from '../src/index.js'
+import { isErr, isOk, wrap, unwrap, Ok, Err } from '../src/index.js'
 
 async function maybeError (isErr: boolean) {
   return isErr
@@ -25,10 +25,18 @@ export async function probandoEslint (n: number) {
     case 2:
       return Ok(false)
     case 3:
-      return Ok(null)
+      return Err({ code: 3 })
     default:
       return Ok(undefined)
   }
+}
+
+export async function returnInferedUnion (n: number) {
+  if (n > 100) {
+    return Err({ code: '>100' })
+  }
+  const result = await probandoEslint(2)
+  return result
 }
 
 export const wrappedFunction = wrap<typeof maybeManyErrors | typeof maybeError | typeof probandoEslint>()(

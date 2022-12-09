@@ -1,7 +1,7 @@
 {
   "name": "@fathom3-dev/eslint-plugin-typescript-typed-errors",
   "author": "Fathom3 Dev",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "keywords": [
     "typescript",
@@ -28,7 +28,8 @@
     "node": ">=16"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.lib.json"
+    "build": "tsc --project tsconfig.lib.json",
+    "build:watch": "tsc --project tsconfig.lib.json --watch"
   },
   "dependencies": {
     "@typescript-eslint/utils": "^5.45.1"
