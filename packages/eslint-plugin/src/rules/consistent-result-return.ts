@@ -79,7 +79,6 @@ export default createRule({
 
       scopeInfo.returns.forEach((node) => {
         if (!isResultExpression(node)) {
-          console.log('NONRESULTRETURN')
           context.report({
             node,
             messageId: 'nonResultReturn',
