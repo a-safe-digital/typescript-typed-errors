@@ -51,7 +51,10 @@ export default createRule({
     }
 
     function isResultExpression (node: ReturnExpression) {
-      if (node.type === AST_NODE_TYPES.ReturnStatement && !node.argument) {
+      if (!(
+        node.type === AST_NODE_TYPES.CallExpression
+        || node.type === AST_NODE_TYPES.Identifier
+      )) {
         return false
       }
 
