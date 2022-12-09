@@ -1,7 +1,7 @@
 import b from 'benny'
 import tsResults from 'ts-results'
 import oxide from 'oxide.ts'
-import { Ok, isOk } from '../src/core.js'
+import { Ok, isOk } from '@fathom3-dev/typescript-typed-errors'
 
 function Ts () {
   return tsResults.Ok(true)

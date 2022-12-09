@@ -1,6 +1,11 @@
-node_modules
-.env
+# compiled output
+/dist
+/tmp
+/out-tsc
 
+.env
+# dependencies
+node_modules
 
 # IDEs and editors
 /.idea
@@ -20,6 +25,17 @@ node_modules
 
 # vim
 *.swp
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
 # System Files
 .DS_Store
 Thumbs.db
