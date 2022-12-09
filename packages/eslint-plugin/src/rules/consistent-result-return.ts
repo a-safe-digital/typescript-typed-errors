@@ -1,5 +1,6 @@
-import { AST_NODE_TYPES, TSESTree, ESLintUtils } from '@typescript-eslint/utils'
+import { AST_NODE_TYPES, TSESTree, ESLintUtils, ASTUtils } from '@typescript-eslint/utils'
 import { createRule } from '../utils/create-rule.js'
+import { CodePath } from '../types/code-path'
 
 type FunctionNode =
   | TSESTree.FunctionDeclaration
@@ -11,6 +12,12 @@ type ScopeInfo = {
   owningFunc: FunctionNode
   returns: ReturnExpression[]
 }
+type PathInfo = {
+  upper: PathInfo
+  codePath: CodePath
+  hasReturn: boolean
+  node: TSESTree.Node
+} | null
 
 export default createRule({
   name: 'consistent-result-return',
@@ -23,7 +30,8 @@ export default createRule({
       requiresTypeChecking: true,
     },
     messages: {
-      nonResultReturn: 'Return an Ok or Err here',
+      nonResultReturn: '{{name}} expected to return an Ok or Err result',
+      implicitUndefined: '{{name}} implicitly returns undefined. Expected to always return Ok or Err.',
     },
     schema: [],
   },
@@ -33,6 +41,7 @@ export default createRule({
     const checker = parserServices.program.getTypeChecker()
 
     const scopeInfoStack: ScopeInfo[] = []
+    let pathInfo: PathInfo = null
 
     function enterFunction (node: FunctionNode): void {
       scopeInfoStack.push({
@@ -48,11 +57,9 @@ export default createRule({
 
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node)
       const nodeType = checker.getTypeAtLocation(tsNode)
-      const props = nodeType.getApparentProperties()
 
-      return props.some((symb) => {
-        return /__@IsErrSymbol@/g.test(symb.escapedName.toString())
-      })
+      return nodeType.aliasSymbol?.name === 'OkResult'
+        || nodeType.aliasSymbol?.name === 'ErrResult'
     }
 
     function exitFunction (): void {
@@ -62,13 +69,47 @@ export default createRule({
       const returnsResult = scopeInfo.returns.some(isResultExpression)
       if (!returnsResult) return
 
+      const { owningFunc } = scopeInfo
+      const name = ASTUtils.getFunctionNameWithKind(owningFunc)
+
       scopeInfo.returns.forEach((node) => {
         if (!isResultExpression(node)) {
           context.report({
             node,
             messageId: 'nonResultReturn',
+            data: { name },
           })
         }
+      })
+
+      // implicit undefined return check
+      if (
+        !pathInfo?.hasReturn
+        || pathInfo.codePath.currentSegments.every((s) => !s.reachable)
+      ) {
+        return
+      }
+
+      let loc
+
+      if (owningFunc.type === 'ArrowFunctionExpression') {
+        loc = context.getSourceCode().getTokenBefore(owningFunc.body, ASTUtils.isArrowToken)?.loc
+      } else if (
+        owningFunc.parent && (
+          owningFunc.parent.type === 'MethodDefinition'
+          || (owningFunc.parent.type === 'Property' && owningFunc.parent.method)
+        )
+      ) {
+        // Method name.
+        loc = owningFunc.parent.key.loc
+      } else {
+        loc = (owningFunc.id || context.getSourceCode().getFirstToken(owningFunc))?.loc
+      }
+
+      context.report({
+        loc: loc || owningFunc.loc,
+        messageId: 'implicitUndefined',
+        data: { name },
       })
     }
 
@@ -93,7 +134,25 @@ export default createRule({
       'FunctionExpression:exit': exitFunction,
       'ArrowFunctionExpression:exit': exitFunction,
 
+      // Initializes/Disposes state of each code path.
+      onCodePathStart (_codePath: unknown, node?: TSESTree.Node) {
+        const codePath = _codePath as CodePath
+
+        pathInfo = {
+          upper: pathInfo,
+          codePath,
+          hasReturn: false,
+          node: node!,
+        }
+      },
+      onCodePathEnd () {
+        pathInfo = pathInfo!.upper
+      },
+
       ReturnStatement (node) {
+        if (pathInfo && !pathInfo.hasReturn) {
+          pathInfo.hasReturn = true
+        }
         const scopeInfo = scopeInfoStack[scopeInfoStack.length - 1]
 
         if (!node.argument) {
