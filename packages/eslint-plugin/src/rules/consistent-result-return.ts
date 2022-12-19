@@ -64,6 +64,7 @@ export default createRule({
       if (nodeType.aliasSymbol) {
         return nodeType.aliasSymbol.name === 'OkResult'
           || nodeType.aliasSymbol.name === 'ErrResult'
+          || nodeType.aliasSymbol.name === 'Result'
       }
 
       const props = nodeType.getApparentProperties()
