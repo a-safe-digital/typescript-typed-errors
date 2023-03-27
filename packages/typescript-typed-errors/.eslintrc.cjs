@@ -5,10 +5,10 @@ module.exports = {
     project: ['tsconfig.lib.json', 'tsconfig.spec.json', 'tsconfig.eslint.json'],
     tsconfigRootDir: __dirname,
   },
-  plugins: ['@typescript-eslint', '@fathom3-dev/typescript-typed-errors'],
+  plugins: ['@typescript-eslint', '@a-safe-digital/typescript-typed-errors'],
   extends: [
     'plugin:@typescript-eslint/recommended',
-    'plugin:@fathom3-dev/typescript-typed-errors/recommended',
+    'plugin:@a-safe-digital/typescript-typed-errors/recommended',
     'standard',
   ],
   rules: {

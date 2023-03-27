@@ -1,7 +1,7 @@
 {
-  "name": "@fathom3-dev/typescript-typed-errors",
+  "name": "@a-safe-digital/typescript-typed-errors",
   "author": "Fathom3 Dev",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "license": "Apache-2.0",
   "type": "module",
   "keywords": [
@@ -44,7 +44,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.5.1",
     "eslint-plugin-promise": "^6.1.1",
-    "@fathom3-dev/eslint-plugin-typescript-typed-errors": "workspace:*",
+    "@a-safe-digital/eslint-plugin-typescript-typed-errors": "workspace:*",
     "jest": "29.3.1",
     "ts-jest": "29.0.3",
     "ts-node": "^10.9.1",

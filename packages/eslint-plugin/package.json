@@ -1,7 +1,7 @@
 {
-  "name": "@fathom3-dev/eslint-plugin-typescript-typed-errors",
+  "name": "@a-safe-digital/eslint-plugin-typescript-typed-errors",
   "author": "Fathom3 Dev",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "license": "Apache-2.0",
   "keywords": [
     "typescript",
